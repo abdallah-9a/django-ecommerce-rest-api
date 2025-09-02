@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.text import slugify
 
 # Create your models here.
 
@@ -16,6 +17,19 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)
     image = models.ImageField(upload_to="categories_img", blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            slug = slugify(self.name)
+            unique_slug = slug
+            counter = 1
+            while Category.objects.filter(slug=unique_slug).exists():
+                unique_slug = f"{slug}-{counter}"
+                counter += 1
+
+            self.slug = unique_slug
+            
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -34,6 +48,19 @@ class Product(models.Model):
         null=True,
         related_name="products",
     )
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            slug = slugify(self.name)
+            unique_slug = slug
+            counter = 1
+            while Product.objects.filter(slug=unique_slug).exists():
+                unique_slug = f"{slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
+            
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
