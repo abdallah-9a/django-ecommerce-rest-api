@@ -56,3 +56,16 @@ def add_to_cart(request):
 
     serializer = CartSerializer(cart)
     return Response(serializer.data)
+
+
+@api_view(["PUT"])
+def update_cart_quantity(request, item_id):
+    quantity = request.data.get("quantity")
+    quantity = int(quantity)
+
+    item = CartItem.objects.get(id=item_id)
+    item.quantity = quantity
+    item.save()
+
+    serializer = CartItemSerializer(item)
+    return Response(serializer.data)

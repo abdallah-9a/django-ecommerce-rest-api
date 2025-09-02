@@ -6,5 +6,8 @@ urlpatterns = [
     path("products/<slug:slug>/", views.product_detail, name="product_detail"),
     path("categories/", views.category_list, name="category_list"),
     path("categories/<slug:slug>/", views.category_detail, name="category_detail"),
-    path("cart/", views.add_to_cart, name="add_to_cart"),
+    path("cart/", views.add_to_cart, name="add_to_cart"), # POST
+    path(
+        "cart/<int:item_id>/", views.update_cart_quantity, name="update_cart_quantity" # PUT 
+    ),
 ]
