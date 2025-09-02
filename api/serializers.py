@@ -21,6 +21,7 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
 
 class CategoryDetailSerailizer(serializers.ModelSerializer):
+    products = ProductListSerializer(read_only=True ,many=True)
     class Meta:
         model = Category
         fields = ["id", "name", "image", "products"]
