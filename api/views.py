@@ -42,20 +42,20 @@ def category_detail(request, slug):
     return Response(serializer.data)
 
 
-@api_view(["POST"])
-def add_to_cart(request):
-    cart_code = request.data.get("cart_code")
-    product_id = request.data.get("product_id")
+# @api_view(["POST"])
+# def add_to_cart(request):
+#     cart_code = request.data.get("cart_code")
+#     product_id = request.data.get("product_id")
 
-    cart, created = Cart.objects.get_or_create(cart_code=cart_code)
-    product = Product.objects.get(id=product_id)
+#     cart, created = Cart.objects.get_or_create(cart_code=cart_code)
+#     product = Product.objects.get(id=product_id)
 
-    cartitem, created = CartItem.objects.get_or_create(product=product, cart=cart)
-    cartitem.quantity = 1
-    cartitem.save()
+#     cartitem, created = CartItem.objects.get_or_create(product=product, cart=cart)
+#     cartitem.quantity = 1
+#     cartitem.save()
 
-    serializer = CartSerializer(cart)
-    return Response(serializer.data)
+#     serializer = CartSerializer(cart)
+#     return Response(serializer.data)
 
 
 @api_view(["PUT"])
@@ -69,3 +69,37 @@ def update_cart_quantity(request, item_id):
 
     serializer = CartItemSerializer(item)
     return Response(serializer.data)
+
+
+# @api_view(["GET"])
+# def cart_detail(request):
+#     cart_code = request.query_params.get("cart_code")
+#     cart = Cart.objects.get(cart_code=cart_code)
+
+#     serializer = CartSerializer(cart)
+#     return Response(serializer.data)
+
+
+@api_view(["GET", "POST"])
+def cart_view(request):
+    method = request.method
+    if method == "POST":  # add product to cart
+        cart_code = request.data.get("cart_code")
+        product_id = request.data.get("product_id")
+
+        cart, created = Cart.objects.get_or_create(cart_code=cart_code)
+        product = Product.objects.get(id=product_id)
+
+        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.save()
+
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+
+    if method == "GET":  # get cart detail
+        cart_code = request.query_params.get("cart_code")
+        cart = Cart.objects.get(cart_code=cart_code)
+
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
