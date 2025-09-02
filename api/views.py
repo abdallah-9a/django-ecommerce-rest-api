@@ -6,8 +6,10 @@ from .serializers import (
     ProductDetailSerializer,
     CategoryDetailSerailizer,
     CategoryListSerializer,
+    CartSerializer,
+    CartItemSerializer,
 )
-from .models import Product, Category
+from .models import Product, Category, Cart, CartItem
 
 # Create your views here.
 
@@ -37,4 +39,20 @@ def category_list(request):
 def category_detail(request, slug):
     category = Category.objects.get(slug=slug)
     serializer = CategoryDetailSerailizer(category)
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+def add_to_cart(request):
+    cart_code = request.data.get("cart_code")
+    product_id = request.data.get("product_id")
+
+    cart, created = Cart.objects.get_or_create(cart_code=cart_code)
+    product = Product.objects.get(id=product_id)
+
+    cartitem, created = CartItem.objects.get_or_create(product=product, cart=cart)
+    cartitem.quantity = 1
+    cartitem.save()
+
+    serializer = CartSerializer(cart)
     return Response(serializer.data)
