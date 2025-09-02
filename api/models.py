@@ -73,3 +73,12 @@ class Cart(models.Model):
 
     def __str__(self):
         return self.cart_code
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="item")
+    quantity = models.IntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} X {self.product} in Cart {self.cart.cart_code}"
