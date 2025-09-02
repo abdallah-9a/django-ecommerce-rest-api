@@ -28,7 +28,7 @@ class Category(models.Model):
                 counter += 1
 
             self.slug = unique_slug
-            
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -59,8 +59,17 @@ class Product(models.Model):
                 counter += 1
 
             self.slug = slug
-            
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
+
+
+class Cart(models.Model):
+    cart_code = models.CharField(max_length=11, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.cart_code
