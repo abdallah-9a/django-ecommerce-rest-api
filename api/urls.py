@@ -15,4 +15,9 @@ urlpatterns = [
     ),
     path("products/<int:id>/reviews/", views.review_view, name="Add_review"),  # POST
     path("products/<int:id>/reviews/", views.review_view, name="reviews_list"),  # GET
+    path(
+        "products/<int:product_id>/reviews/<int:review_id>/",
+        views.review_view,
+        name="update_review",
+    ),  # PUT
 ]

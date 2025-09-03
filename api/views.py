@@ -108,29 +108,43 @@ def cart_view(request):
         return Response(serializer.data)
 
 
-@api_view(["POST", "GET"])
-def review_view(request, id):
+@api_view(["GET", "POST", "PUT"])
+def review_view(request, product_id, review_id):
     method = request.method
     if method == "GET":
-        product = Product.objects.get(id=id)
+        product = Product.objects.get(id=product_id)
         reviews = product.reviews
 
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
-    else:
+    elif method == "POST":
         email = request.data.get("email")
         msg = request.data.get("review")
         rating = request.data.get("rating")
 
-        product = Product.objects.get(id=id)
+        product = Product.objects.get(id=product_id)
         user = User.objects.get(email=email)
 
         if Review.objects.filter(product=product, user=user).exists():
-            return Response("You are already dropped a review for this product", status=400)
-        
+            return Response(
+                "You are already dropped a review for this product", status=400
+            )
+
         review = Review.objects.create(
             product=product, user=user, rating=rating, review=msg
         )
 
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data)
+
+    elif method == "PUT":
+        review = Review.objects.get(id=review_id)
+        msg = request.data.get("review")
+        rating = request.data.get("rating")
+        
+        review.review = msg
+        review.rating = rating
+        review.save()
+        
         serializer = ReviewSerializer(review)
         return Response(serializer.data)
