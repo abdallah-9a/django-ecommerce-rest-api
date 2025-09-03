@@ -157,7 +157,7 @@ def review_view(request, product_id, review_id=None):
         return Response("Review deleted Successfully", status=204)
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET", "POST", "DELETE"])
 def wishlist_view(request, product_id=None):
     method = request.method
     if method == "GET":
@@ -169,11 +169,11 @@ def wishlist_view(request, product_id=None):
 
         return Response(serializer.data)
 
-    else:
+    elif method == "POST":
         email = request.data.get("email")
         user = User.objects.get(email=email)
         wishlist, _ = Wishlist.objects.get_or_create(user=user)
-        
+
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
@@ -183,4 +183,15 @@ def wishlist_view(request, product_id=None):
 
         serializer = WishlistSerializer(wishlist)
 
+        return Response(serializer.data)
+
+    elif method == "DELETE":
+        email = request.data.get("email")
+        user = User.objects.get(email=email)
+        product = Product.objects.get(id=product_id)
+        wishlist = Wishlist.objects.get(user=user)
+
+        wishlist.products.remove(product)
+
+        serializer = WishlistSerializer(wishlist)
         return Response(serializer.data)
