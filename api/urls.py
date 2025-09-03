@@ -13,4 +13,5 @@ urlpatterns = [
         views.update_cart_quantity,
         name="update_cart_quantity",  # PUT
     ),
+    path("products/<int:id>/reviews/", views.review_view, name="Add_review"),  # POST
 ]

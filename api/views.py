@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.contrib.auth import get_user_model
 from .serializers import (
     ProductListSerializer,
     ProductDetailSerializer,
@@ -8,9 +9,11 @@ from .serializers import (
     CategoryListSerializer,
     CartSerializer,
     CartItemSerializer,
+    ReviewSerializer,
 )
-from .models import Product, Category, Cart, CartItem
+from .models import Product, Category, Cart, CartItem, Review
 
+User = get_user_model()
 # Create your views here.
 
 
@@ -103,3 +106,20 @@ def cart_view(request):
 
         serializer = CartSerializer(cart)
         return Response(serializer.data)
+
+
+@api_view(["POST"])
+def review_view(request, id):
+    email = request.data.get("email")
+    msg = request.data.get("review")
+    rating = request.data.get("rating")
+
+    product = Product.objects.get(id=id)
+    user = User.objects.get(email=email)
+
+    review = Review.objects.create(
+        product=product, user=user, rating=rating, review=msg
+    )
+
+    serializer = ReviewSerializer(review)
+    return Response(serializer.data)
