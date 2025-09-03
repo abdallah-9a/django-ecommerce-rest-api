@@ -10,8 +10,9 @@ from .serializers import (
     CartSerializer,
     CartItemSerializer,
     ReviewSerializer,
+    WishlistSerializer,
 )
-from .models import Product, Category, Cart, CartItem, Review
+from .models import Product, Category, Cart, CartItem, Review, Wishlist
 
 User = get_user_model()
 # Create your views here.
@@ -154,3 +155,17 @@ def review_view(request, product_id, review_id):
         review.delete()
 
         return Response("Review deleted Successfully", status=204)
+
+
+@api_view(["POST"])
+def wishlist_view(request, product_id):
+    email = request.data.get("email")
+    user = User.objects.get(email=email)
+    wishlist, _ = Wishlist.objects.get_or_create(user=user)
+    product = Product.objects.get(id=product_id)
+
+    wishlist.products.add(product)
+
+    serializer = WishlistSerializer(wishlist)
+
+    return Response(serializer.data)

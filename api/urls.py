@@ -25,4 +25,7 @@ urlpatterns = [
         views.review_view,
         name="delete_review",
     ),  # DELETE
+    path(
+        "wishlist/add/<int:product_id>/", views.wishlist_view, name="add_to_wishlist"
+    ),  # POST
 ]
