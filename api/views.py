@@ -117,17 +117,20 @@ def review_view(request, id):
 
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
+    else:
+        email = request.data.get("email")
+        msg = request.data.get("review")
+        rating = request.data.get("rating")
 
-    email = request.data.get("email")
-    msg = request.data.get("review")
-    rating = request.data.get("rating")
+        product = Product.objects.get(id=id)
+        user = User.objects.get(email=email)
 
-    product = Product.objects.get(id=id)
-    user = User.objects.get(email=email)
+        if Review.objects.filter(product=product, user=user).exists():
+            return Response("You are already dropped a review for this product", status=400)
+        
+        review = Review.objects.create(
+            product=product, user=user, rating=rating, review=msg
+        )
 
-    review = Review.objects.create(
-        product=product, user=user, rating=rating, review=msg
-    )
-
-    serializer = ReviewSerializer(review)
-    return Response(serializer.data)
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data)
