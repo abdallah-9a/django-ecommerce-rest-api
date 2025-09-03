@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
+from django.conf import settings
 
 # Create your models here.
 
@@ -82,3 +83,33 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} X {self.product} in Cart {self.cart.cart_code}"
+
+
+class Review(models.Model):
+    RATING_CHOICES = [
+        (1, "1 - Poor"),
+        (2, "2 - Fair"),
+        (3, "3 - Good"),
+        (4, "4 - Very Good"),
+        (5, "5 - Excellent"),
+    ]
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="reviews"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews"
+    )
+    rating = models.PositiveIntegerField(choices=RATING_CHOICES)
+    review = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s review on {self.product.name}"
+
+    class Meta:
+        unique_together = [
+            "user",
+            "product",
+        ]  # each user can review only one for each product
+        ordering = ["-created_at"]  # LIFO
