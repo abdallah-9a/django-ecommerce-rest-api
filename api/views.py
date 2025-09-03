@@ -110,7 +110,7 @@ def cart_view(request):
 
 
 @api_view(["GET", "POST", "PUT", "DELETE"])
-def review_view(request, product_id, review_id):
+def review_view(request, product_id, review_id=None):
     method = request.method
     if method == "GET":
         product = Product.objects.get(id=product_id)
@@ -157,15 +157,30 @@ def review_view(request, product_id, review_id):
         return Response("Review deleted Successfully", status=204)
 
 
-@api_view(["POST"])
-def wishlist_view(request, product_id):
-    email = request.data.get("email")
-    user = User.objects.get(email=email)
-    wishlist, _ = Wishlist.objects.get_or_create(user=user)
-    product = Product.objects.get(id=product_id)
+@api_view(["GET", "POST"])
+def wishlist_view(request, product_id=None):
+    method = request.method
+    if method == "GET":
+        email = request.query_params.get("email")
+        user = User.objects.get(email=email)
+        wishlist, _ = Wishlist.objects.get_or_create(user=user)
 
-    wishlist.products.add(product)
+        serializer = WishlistSerializer(wishlist)
 
-    serializer = WishlistSerializer(wishlist)
+        return Response(serializer.data)
 
-    return Response(serializer.data)
+    else:
+        email = request.data.get("email")
+        user = User.objects.get(email=email)
+        wishlist, _ = Wishlist.objects.get_or_create(user=user)
+        
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({"error": "Product Not Found"}, status=404)
+
+        wishlist.products.add(product)
+
+        serializer = WishlistSerializer(wishlist)
+
+        return Response(serializer.data)

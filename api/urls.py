@@ -28,4 +28,5 @@ urlpatterns = [
     path(
         "wishlist/add/<int:product_id>/", views.wishlist_view, name="add_to_wishlist"
     ),  # POST
+    path("wishlist/", views.wishlist_view, name="wishlist_items"),  # GET
 ]
