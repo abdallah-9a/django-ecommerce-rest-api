@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, Cart, CartItem
+from .models import Product, Category, Cart, CartItem, Review
 from django.contrib.auth import get_user_model
 
 
@@ -60,3 +60,11 @@ class CartSerializer(serializers.ModelSerializer):
         items = cart.cart_items.all()
         total = sum([item.product.price * item.quantity for item in items])
         return total
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ["id", "user", "rating", "review", "creaeted_at", "updated_at"]
