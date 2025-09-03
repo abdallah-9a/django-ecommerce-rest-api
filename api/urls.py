@@ -20,4 +20,9 @@ urlpatterns = [
         views.review_view,
         name="update_review",
     ),  # PUT
+    path(
+        "products/<int:product_id>/reviews/<int:review_id>/",
+        views.review_view,
+        name="delete_review",
+    ),  # DELETE
 ]

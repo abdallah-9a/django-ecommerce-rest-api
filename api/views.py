@@ -108,7 +108,7 @@ def cart_view(request):
         return Response(serializer.data)
 
 
-@api_view(["GET", "POST", "PUT"])
+@api_view(["GET", "POST", "PUT", "DELETE"])
 def review_view(request, product_id, review_id):
     method = request.method
     if method == "GET":
@@ -141,10 +141,16 @@ def review_view(request, product_id, review_id):
         review = Review.objects.get(id=review_id)
         msg = request.data.get("review")
         rating = request.data.get("rating")
-        
+
         review.review = msg
         review.rating = rating
         review.save()
-        
+
         serializer = ReviewSerializer(review)
         return Response(serializer.data)
+
+    elif method == "DELETE":
+        review = Review.objects.get(id=review_id)
+        review.delete()
+
+        return Response("Review deleted Successfully", status=204)
