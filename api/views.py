@@ -108,8 +108,16 @@ def cart_view(request):
         return Response(serializer.data)
 
 
-@api_view(["POST"])
+@api_view(["POST", "GET"])
 def review_view(request, id):
+    method = request.method
+    if method == "GET":
+        product = Product.objects.get(id=id)
+        reviews = product.reviews
+
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
+
     email = request.data.get("email")
     msg = request.data.get("review")
     rating = request.data.get("rating")
