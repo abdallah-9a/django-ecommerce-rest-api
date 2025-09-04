@@ -84,8 +84,8 @@ def update_cart_quantity(request, item_id):
 #     return Response(serializer.data)
 
 
-@api_view(["GET", "POST"])
-def cart_view(request):
+@api_view(["GET", "POST", "DELETE"])
+def cart_view(request, product_id=None):
     method = request.method
     if method == "POST":  # add product to cart
         cart_code = request.data.get("cart_code")
@@ -101,12 +101,29 @@ def cart_view(request):
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
-    if method == "GET":  # get cart detail
+    elif method == "GET":  # get cart detail
         cart_code = request.query_params.get("cart_code")
         cart = Cart.objects.get(cart_code=cart_code)
 
         serializer = CartSerializer(cart)
         return Response(serializer.data)
+    elif method == "DELETE":
+        cart_code = request.data.get("cart_code")
+        try:
+            cart = Cart.objects.get(cart_code=cart_code)
+        except Cart.DoesNotExist:
+            return Response("Cart Doesn't Exist", status=404)
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response("Product Doesn't Exist", status=404)
+        try:
+            item = CartItem.objects.get(cart=cart, product=product)
+            item.delete()
+        except CartItem.DoesNotExist:
+            return Response("Item Doesn't Exists", status=404)
+
+        return Response("Product Deleted Successfully")
 
 
 @api_view(["GET", "POST", "PUT", "DELETE"])

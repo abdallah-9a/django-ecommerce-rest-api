@@ -6,7 +6,8 @@ urlpatterns = [
     path("products/<slug:slug>/", views.product_detail, name="product_detail"),
     path("categories/", views.category_list, name="category_list"),
     path("categories/<slug:slug>/", views.category_detail, name="category_detail"),
-    path("cart/", views.cart_view, name="add_to_cart"),  # POST
+    path("cart/add/<int:product_id>/", views.cart_view, name="add_to_cart"),  # POST
+    path("cart/delete/<int:product_id>/", views.cart_view, name="remove_from_cart"),  # DELETE
     path("cart/", views.cart_view, name="view_cart"),  # GET
     path(
         "cart/<int:item_id>/",
