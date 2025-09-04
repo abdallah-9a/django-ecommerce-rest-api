@@ -4,18 +4,25 @@ from . import views
 urlpatterns = [
     path("products/", views.product_list, name="product_list"),
     path("products/<slug:slug>/", views.product_detail, name="product_detail"),
+    path("products/search/", views.product_search, name="product_search"),
     path("categories/", views.category_list, name="category_list"),
     path("categories/<slug:slug>/", views.category_detail, name="category_detail"),
     path("cart/add/<int:product_id>/", views.cart_view, name="add_to_cart"),  # POST
-    path("cart/delete/<int:product_id>/", views.cart_view, name="remove_from_cart"),  # DELETE
+    path(
+        "cart/delete/<int:product_id>/", views.cart_view, name="remove_from_cart"
+    ),  # DELETE
     path("cart/", views.cart_view, name="view_cart"),  # GET
     path(
         "cart/<int:item_id>/",
         views.update_cart_quantity,
         name="update_cart_quantity",  # PUT
     ),
-    path("products/<int:id>/reviews/", views.review_view, name="Add_review"),  # POST
-    path("products/<int:id>/reviews/", views.review_view, name="reviews_list"),  # GET
+    path(
+        "products/<int:product_id>/reviews/", views.review_view, name="Add_review"
+    ),  # POST
+    path(
+        "products/<int:product_id>/reviews/", views.review_view, name="reviews_list"
+    ),  # GET
     path(
         "products/<int:product_id>/reviews/<int:review_id>/",
         views.review_view,
