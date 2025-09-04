@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
@@ -27,7 +27,7 @@ def product_list(requst):
 
 @api_view(["GET"])
 def product_detail(request, slug):
-    product = Product.objects.get(slug=slug)
+    product = get_object_or_404(Product, slug=slug)
     serializer = ProductDetailSerializer(product)
     return Response(serializer.data)
 
@@ -41,7 +41,7 @@ def category_list(request):
 
 @api_view(["GET"])
 def category_detail(request, slug):
-    category = Category.objects.get(slug=slug)
+    category = get_object_or_404(Category, slug=slug)
     serializer = CategoryDetailSerailizer(category)
     return Response(serializer.data)
 
@@ -67,7 +67,7 @@ def update_cart_quantity(request, item_id):
     quantity = request.data.get("quantity")
     quantity = int(quantity)
 
-    item = CartItem.objects.get(id=item_id)
+    item = get_object_or_404(CartItem, id=item_id)
     item.quantity = quantity
     item.save()
 
@@ -103,22 +103,22 @@ def cart_view(request, product_id=None):
 
     elif method == "GET":  # get cart detail
         cart_code = request.query_params.get("cart_code")
-        cart = Cart.objects.get(cart_code=cart_code)
+        cart = get_object_or_404(Cart, cart_code=cart_code)
 
         serializer = CartSerializer(cart)
         return Response(serializer.data)
     elif method == "DELETE":
         cart_code = request.data.get("cart_code")
         try:
-            cart = Cart.objects.get(cart_code=cart_code)
+            cart = get_object_or_404(Cart, cart_code=cart_code)
         except Cart.DoesNotExist:
             return Response("Cart Doesn't Exist", status=404)
         try:
-            product = Product.objects.get(id=product_id)
+            product = get_object_or_404(Product, id=product_id)
         except Product.DoesNotExist:
             return Response("Product Doesn't Exist", status=404)
         try:
-            item = CartItem.objects.get(cart=cart, product=product)
+            item = get_object_or_404(CartItem, cart=cart, product=product)
             item.delete()
         except CartItem.DoesNotExist:
             return Response("Item Doesn't Exists", status=404)
@@ -130,7 +130,7 @@ def cart_view(request, product_id=None):
 def review_view(request, product_id, review_id=None):
     method = request.method
     if method == "GET":
-        product = Product.objects.get(id=product_id)
+        product = get_object_or_404(Product, id=product_id)
         reviews = product.reviews
 
         serializer = ReviewSerializer(reviews, many=True)
@@ -140,8 +140,8 @@ def review_view(request, product_id, review_id=None):
         msg = request.data.get("review")
         rating = request.data.get("rating")
 
-        product = Product.objects.get(id=product_id)
-        user = User.objects.get(email=email)
+        product = get_object_or_404(Product, id=product_id)
+        user = get_object_or_404(User, email=email)
 
         if Review.objects.filter(product=product, user=user).exists():
             return Response(
@@ -168,7 +168,7 @@ def review_view(request, product_id, review_id=None):
         return Response(serializer.data)
 
     elif method == "DELETE":
-        review = Review.objects.get(id=review_id)
+        review = get_object_or_404(Review, id=review_id)
         review.delete()
 
         return Response("Review deleted Successfully", status=204)
@@ -179,7 +179,7 @@ def wishlist_view(request, product_id=None):
     method = request.method
     if method == "GET":
         email = request.query_params.get("email")
-        user = User.objects.get(email=email)
+        user = get_object_or_404(User, email=email)
         wishlist, _ = Wishlist.objects.get_or_create(user=user)
 
         serializer = WishlistSerializer(wishlist)
@@ -188,11 +188,11 @@ def wishlist_view(request, product_id=None):
 
     elif method == "POST":
         email = request.data.get("email")
-        user = User.objects.get(email=email)
+        user = get_object_or_404(User, email=email)
         wishlist, _ = Wishlist.objects.get_or_create(user=user)
 
         try:
-            product = Product.objects.get(id=product_id)
+            product = get_object_or_404(Product, id=product_id)
         except Product.DoesNotExist:
             return Response({"error": "Product Not Found"}, status=404)
 
@@ -204,9 +204,9 @@ def wishlist_view(request, product_id=None):
 
     elif method == "DELETE":
         email = request.data.get("email")
-        user = User.objects.get(email=email)
-        product = Product.objects.get(id=product_id)
-        wishlist = Wishlist.objects.get(user=user)
+        user = get_object_or_404(User, email=email)
+        product = get_object_or_404(Product, id=product_id)
+        wishlist = get_object_or_404(Wishlist, user=user)
 
         wishlist.products.remove(product)
 
