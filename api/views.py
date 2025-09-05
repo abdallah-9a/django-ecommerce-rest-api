@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 from .serializers import (
     ProductListSerializer,
@@ -212,3 +213,23 @@ def wishlist_view(request, product_id=None):
 
         serializer = WishlistSerializer(wishlist)
         return Response(serializer.data)
+
+
+@api_view(["GET"])
+def product_search(request):
+    query = request.query_params.get("q", "")
+    if not query:
+        return Response({"error": "No search query provided"}, status=400)
+    
+    products = Product.objects.filter(
+        Q(name__icontains=query)
+        | Q(description__icontains=query)
+        | Q(category__name__icontains=query)
+    )
+
+    if not products.exists():
+        return Response({"message": "No products found"})
+
+    serializer = ProductListSerializer(products, many=True)
+
+    return Response(serializer.data)
