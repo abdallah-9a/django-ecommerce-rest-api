@@ -43,4 +43,5 @@ urlpatterns = [
     ),  # POST
     path("payment/success/", views.payment_success, name="payment_success"),  # GET
     path("payment/cancel/", views.payment_cancel, name="payment_cancelled"),  # GET
+    path("stripe/webhook/", views.webhook_view, name="stripe_webhook"),  # GET
 ]

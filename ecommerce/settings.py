@@ -29,7 +29,7 @@ SECRET_KEY = "django-insecure-_gmoc=#r2jm6l-b06y+jlv=noy$*k&gga)&j3q@qkg6ua10!f=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -136,3 +136,4 @@ AUTH_USER_MODEL = "api.CustomUser"
 
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
+WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRETE")
