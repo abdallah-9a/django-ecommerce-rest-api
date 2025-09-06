@@ -1,3 +1,5 @@
+import stripe
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -16,6 +18,7 @@ from .serializers import (
 from .models import Product, Category, Cart, CartItem, Review, Wishlist
 
 User = get_user_model()
+stripe.api_key = settings.STRIPE_SECRET_KEY
 # Create your views here.
 
 
@@ -220,7 +223,7 @@ def product_search(request):
     query = request.query_params.get("q", "")
     if not query:
         return Response({"error": "No search query provided"}, status=400)
-    
+
     products = Product.objects.filter(
         Q(name__icontains=query)
         | Q(description__icontains=query)
@@ -233,3 +236,55 @@ def product_search(request):
     serializer = ProductListSerializer(products, many=True)
 
     return Response(serializer.data)
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+import stripe
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+@api_view(["POST"])
+def create_checkout_session(request):
+    cart_code = request.data.get("cart_code")
+    email = request.data.get("email")
+    cart = get_object_or_404(Cart, cart_code=cart_code)
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            customer_email=email,
+            payment_method_types=["card"],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {"name": item.product.name},
+                        "unit_amount": int(item.product.price * 100),  # amount in cents
+                    },
+                    "quantity": item.quantity,
+                }
+                for item in cart.cart_items.all()
+            ],
+            mode="payment",
+            success_url="http://localhost:8000/api/payment/success/",
+            cancel_url="http://localhost:8000/api/payment/cancel/",
+            metadata={"cart_code": cart_code},
+        )
+
+        return Response({"checkout_url": checkout_session.url})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(["GET"])
+def payment_success(request):
+    return Response({"status": "success", "message": "Payment Completed!"})
+
+
+@api_view(["GET"])
+def payment_cancel(request):
+    return Response({"status": "cancelled", "message": "Payment was calcelled!"})

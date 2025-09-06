@@ -38,4 +38,9 @@ urlpatterns = [
         name="delete_from_wishlist",
     ),  # DELETE
     path("wishlist/", views.wishlist_view, name="wishlist_items"),  # GET
+    path(
+        "checkout/create/", views.create_checkout_session, name="create_checkout"
+    ),  # POST
+    path("payment/success/", views.payment_success, name="payment_success"),  # GET
+    path("payment/cancel/", views.payment_cancel, name="payment_cancelled"),  # GET
 ]
