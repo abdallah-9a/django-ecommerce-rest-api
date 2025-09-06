@@ -8,6 +8,8 @@ from .models import (
     Review,
     ProductRating,
     Wishlist,
+    Order,
+    OrderItem,
 )
 from django.contrib.auth.admin import UserAdmin
 
@@ -39,3 +41,4 @@ admin.site.register(CartItem)
 
 admin.site.register([Review, ProductRating])
 admin.site.register(Wishlist)
+admin.site.register([Order, OrderItem])
