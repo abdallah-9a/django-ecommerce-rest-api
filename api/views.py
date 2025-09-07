@@ -5,6 +5,7 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import generics
 from django.db.models import Q
 from django.contrib.auth import get_user_model
 from .serializers import (
@@ -32,6 +33,11 @@ User = get_user_model()
 stripe.api_key = settings.STRIPE_SECRET_KEY
 endpoint_secret = settings.WEBHOOK_SECRET
 # Create your views here.
+
+
+class ProductListView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductListSerializer
 
 
 @api_view(["GET"])
