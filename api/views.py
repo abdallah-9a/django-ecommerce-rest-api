@@ -47,6 +47,12 @@ def product_list(requst):
     return Response(serializer.data)
 
 
+class ProductDetailView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductDetailSerializer
+    lookup_field = "slug"
+
+
 @api_view(["GET"])
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
@@ -54,11 +60,22 @@ def product_detail(request, slug):
     return Response(serializer.data)
 
 
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryListSerializer
+
+
 @api_view(["GET"])
 def category_list(request):
     category_list = Category.objects.all()
     serializer = CategoryListSerializer(category_list, many=True)
     return Response(serializer.data)
+
+
+class CategoryDetailView(generics.RetrieveAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryDetailSerailizer
+    lookup_field = "slug"
 
 
 @api_view(["GET"])
@@ -82,6 +99,24 @@ def category_detail(request, slug):
 
 #     serializer = CartSerializer(cart)
 #     return Response(serializer.data)
+
+
+class UpdateCartQuantity(generics.UpdateAPIView):
+    queryset = CartItem.objects.all()
+    serializer_class = CartItemSerializer
+    lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        item = self.get_object()
+        quantity = request.data.get("quantity")
+
+        if not quantity or int(quantity) <= 0:
+            return Response({"error": "Quantity Must be Positive"}, status=400)
+
+        item.quantity = int(quantity)
+        item.save()
+        serializer = self.get_serializer(item)
+        return Response(serializer.data)
 
 
 @api_view(["PUT"])
