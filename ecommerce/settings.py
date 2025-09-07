@@ -85,6 +85,18 @@ DATABASES = {
     }
 }
 
+# Postgres for production
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "railway",
+#         "USER": "postgres",
+#         "PASSWORD": os.getenv("PG_PASSWORD"),
+#         "HOST": os.getenv("PG_HOST"),
+#         "PORT": os.getenv("PG_PORT"),
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
