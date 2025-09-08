@@ -69,6 +69,13 @@ class Product(models.Model):
 
 class Cart(models.Model):
     cart_code = models.CharField(max_length=11, unique=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="cart",
+        null=True,  # to let guest use it
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
