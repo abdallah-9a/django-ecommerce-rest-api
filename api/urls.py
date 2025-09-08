@@ -15,11 +15,13 @@ urlpatterns = [
         views.CategoryDetailView.as_view(),
         name="category_detail",
     ),
-    path("cart/add/<int:product_id>/", views.cart_view, name="add_to_cart"),  # POST
     path(
-        "cart/delete/<int:product_id>/", views.cart_view, name="remove_from_cart"
+        "cart/<str:cart_code>/add/", views.CartView.as_view(), name="cart-add"
+    ),  # POST
+    path(
+        "cart/<str:cart_code>/items/delete/", views.CartView.as_view(), name="cart-remove"
     ),  # DELETE
-    path("cart/", views.cart_view, name="view_cart"),  # GET
+    path("cart/<str:cart_code>/", views.CartView.as_view(), name="view_cart"),  # GET
     path(
         "cart/<int:item_id>/",
         views.UpdateCartQuantity.as_view(),

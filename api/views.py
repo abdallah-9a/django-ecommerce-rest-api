@@ -101,7 +101,7 @@ def category_detail(request, slug):
 #     return Response(serializer.data)
 
 
-class UpdateCartQuantity(generics.UpdateAPIView):
+class UpdateCartQuantity(generics.UpdateAPIView):  # Need to refactor after add Authz
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
     lookup_field = "id"
@@ -139,6 +139,52 @@ def update_cart_quantity(request, item_id):
 
 #     serializer = CartSerializer(cart)
 #     return Response(serializer.data)
+
+
+class CartView(generics.GenericAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    lookup_field = "cart_code"
+
+    def post(self, request, *args, **kwargs):
+        cart = self.get_object()
+        product_id = request.data.get("product_id")
+        quantity = int(request.data.get("quantity", 1))  # Default = 1
+
+        product = get_object_or_404(Product, id=product_id)
+
+        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        if created:
+            item.quantity = 1
+        else:
+            item.quantity += quantity
+
+        item.save()
+
+        serailizer = self.get_serializer(cart)
+        return Response(serailizer.data)
+
+    def get(self, request, *args, **kwargs):
+        cart = self.get_object()
+
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        cart = self.get_object()
+        product_id = request.data.get("product_id")
+
+        if not product_id:
+            return Response({"error": "Product Id is required"}, status=400)
+
+        product = get_object_or_404(Product, id=product_id)
+
+        try:
+            item = get_object_or_404(CartItem, cart=cart, product=product)
+            item.delete()
+            return Response({"message": "Product removed from cart"})
+        except CartItem.DoesNotExist:
+            return Response({"error": "Product not found in cart"})
 
 
 @api_view(["GET", "POST", "DELETE"])
