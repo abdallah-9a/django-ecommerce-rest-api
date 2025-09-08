@@ -96,95 +96,41 @@ def category_detail(request, slug):
     return Response(serializer.data)
 
 
-# @api_view(["POST"])
-# def add_to_cart(request):
-#     cart_code = request.data.get("cart_code")
-#     product_id = request.data.get("product_id")
-
-#     cart, created = Cart.objects.get_or_create(cart_code=cart_code)
-#     product = Product.objects.get(id=product_id)
-
-#     cartitem, created = CartItem.objects.get_or_create(product=product, cart=cart)
-#     cartitem.quantity = 1
-#     cartitem.save()
-
-#     serializer = CartSerializer(cart)
-#     return Response(serializer.data)
-
-
-class UpdateCartQuantity(generics.UpdateAPIView):  # Need to refactor after add Authz
-    queryset = CartItem.objects.all()
-    serializer_class = CartItemSerializer
-    authentication_classes = [authentication.BasicAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    lookup_field = "id"
-
-    def update(self, request, *args, **kwargs):
-        item = self.get_object()
-        quantity = request.data.get("quantity")
-
-        if not quantity or int(quantity) <= 0:
-            return Response({"error": "Quantity Must be Positive"}, status=400)
-
-        item.quantity = int(quantity)
-        item.save()
-        serializer = self.get_serializer(item)
-        return Response(serializer.data)
-
-
-@api_view(["PUT"])
-def update_cart_quantity(request, item_id):
-    quantity = request.data.get("quantity")
-    quantity = int(quantity)
-
-    item = get_object_or_404(CartItem, id=item_id)
-    item.quantity = quantity
-    item.save()
-
-    serializer = CartItemSerializer(item)
-    return Response(serializer.data)
-
-
-# @api_view(["GET"])
-# def cart_detail(request):
-#     cart_code = request.query_params.get("cart_code")
-#     cart = Cart.objects.get(cart_code=cart_code)
-
-#     serializer = CartSerializer(cart)
-#     return Response(serializer.data)
-
-
 class CartView(generics.GenericAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    lookup_field = "cart_code"
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self, request):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        return cart
+
+    def get(self, request, *args, **kwargs):
+        cart = self.get_object(request)
+
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        cart = self.get_object()
+        """Add new product, or update quantity for a product"""
+        cart = self.get_object(request)
         product_id = request.data.get("product_id")
         quantity = int(request.data.get("quantity", 1))  # Default = 1
 
         product = get_object_or_404(Product, id=product_id)
 
         item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        if created:
-            item.quantity = 1
-        else:
-            item.quantity += quantity
+        if quantity <= 0:
+            return Response({"error": "Quantity Must be positive"}, status=400)
+        item.quantity = quantity
 
         item.save()
 
         serailizer = self.get_serializer(cart)
         return Response(serailizer.data)
 
-    def get(self, request, *args, **kwargs):
-        cart = self.get_object()
-
-        serializer = self.get_serializer(cart)
-        return Response(serializer.data)
-
     def delete(self, request, *args, **kwargs):
-        cart = self.get_object()
+        cart = self.get_object(request)
         product_id = request.data.get("product_id")
 
         if not product_id:
@@ -196,6 +142,7 @@ class CartView(generics.GenericAPIView):
             item = get_object_or_404(CartItem, cart=cart, product=product)
             item.delete()
             return Response({"message": "Product removed from cart"})
+
         except CartItem.DoesNotExist:
             return Response({"error": "Product not found in cart"})
 

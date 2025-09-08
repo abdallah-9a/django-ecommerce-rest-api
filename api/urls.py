@@ -15,18 +15,7 @@ urlpatterns = [
         views.CategoryDetailView.as_view(),
         name="category_detail",
     ),
-    path(
-        "cart/<str:cart_code>/add/", views.CartView.as_view(), name="cart-add"
-    ),  # POST
-    path(
-        "cart/<str:cart_code>/items/delete/", views.CartView.as_view(), name="cart-remove"
-    ),  # DELETE
-    path("cart/<str:cart_code>/", views.CartView.as_view(), name="view_cart"),  # GET
-    path(
-        "cart/<int:item_id>/",
-        views.UpdateCartQuantity.as_view(),
-        name="update_cart_quantity",  # PUT
-    ),
+    path("cart/", views.CartView.as_view(), name="cart"),  # GET, POST, and DELETE
     path("products/<int:id>/reviews/", views.review_view, name="Add_review"),  # POST
     path("products/<int:id>/reviews/", views.review_view, name="reviews_list"),  # GET
     path(
