@@ -6,6 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import generics
+from rest_framework import authentication, permissions
 from django.db.models import Q
 from django.contrib.auth import get_user_model
 from .serializers import (
@@ -38,6 +39,10 @@ endpoint_secret = settings.WEBHOOK_SECRET
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductListSerializer
+    authentication_classes = [
+        authentication.BasicAuthentication
+    ]  # isn't important in this case, but add anyway
+    permission_classes = [permissions.AllowAny]
 
 
 @api_view(["GET"])
@@ -50,6 +55,8 @@ def product_list(requst):
 class ProductDetailView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductDetailSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.AllowAny]
     lookup_field = "slug"
 
 
@@ -63,6 +70,8 @@ def product_detail(request, slug):
 class CategoryListView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoryListSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.AllowAny]
 
 
 @api_view(["GET"])
@@ -75,6 +84,8 @@ def category_list(request):
 class CategoryDetailView(generics.RetrieveAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerailizer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.AllowAny]
     lookup_field = "slug"
 
 
@@ -104,6 +115,8 @@ def category_detail(request, slug):
 class UpdateCartQuantity(generics.UpdateAPIView):  # Need to refactor after add Authz
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = "id"
 
     def update(self, request, *args, **kwargs):
