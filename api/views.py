@@ -37,12 +37,24 @@ endpoint_secret = settings.WEBHOOK_SECRET
 
 
 class ProductListView(generics.ListAPIView):
-    queryset = Product.objects.all()
     serializer_class = ProductListSerializer
     authentication_classes = [
         authentication.BasicAuthentication
     ]  # isn't important in this case, but add anyway
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        query = self.request.query_params.get("q", "")
+        queryset = Product.objects.all()
+
+        if query:
+            queryset = Product.objects.filter(
+                Q(name__icontains=query)
+                | Q(description__icontains=query)
+                | Q(category__name__icontains=query)
+            )
+
+        return queryset
 
 
 @api_view(["GET"])
@@ -275,26 +287,6 @@ def wishlist_view(request, product_id=None):
 
         serializer = WishlistSerializer(wishlist)
         return Response(serializer.data)
-
-
-@api_view(["GET"])
-def product_search(request):
-    query = request.query_params.get("q", "")
-    if not query:
-        return Response({"error": "No search query provided"}, status=400)
-
-    products = Product.objects.filter(
-        Q(name__icontains=query)
-        | Q(description__icontains=query)
-        | Q(category__name__icontains=query)
-    )
-
-    if not products.exists():
-        return Response({"message": "No products found"})
-
-    serializer = ProductListSerializer(products, many=True)
-
-    return Response(serializer.data)
 
 
 from rest_framework.decorators import api_view

@@ -2,8 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("products/", views.ProductListView.as_view(), name="product_list"),
-    path("products/search/", views.product_search, name="product_search"),
+    path(
+        "products/", views.ProductListView.as_view(), name="product_list"
+    ),  # GET, Search if pass q parameter
     path(
         "products/<slug:slug>/",
         views.ProductDetailView.as_view(),
