@@ -30,14 +30,14 @@ urlpatterns = [
         name="delete_review",
     ),  # DELETE
     path(
-        "wishlist/add/<int:product_id>/", views.wishlist_view, name="add_to_wishlist"
+        "wishlist/add/<int:product_id>/", views.AddToWishlistView.as_view(), name="add_to_wishlist"
     ),  # POST
     path(
-        "wishlist/add/<int:product_id>/",
-        views.wishlist_view,
+        "wishlist/remove/<int:product_id>/",
+        views.RemoveFromWishlist.as_view(),
         name="delete_from_wishlist",
     ),  # DELETE
-    path("wishlist/", views.wishlist_view, name="wishlist_items"),  # GET
+    path("wishlist/", views.WishlistView.as_view(), name="wishlist_items"),  # GET
     path(
         "checkout/create/", views.create_checkout_session, name="create_checkout"
     ),  # POST

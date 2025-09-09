@@ -249,44 +249,47 @@ def review_view(request, product_id, review_id=None):
         return Response("Review deleted Successfully", status=204)
 
 
-@api_view(["GET", "POST", "DELETE"])
-def wishlist_view(request, product_id=None):
-    method = request.method
-    if method == "GET":
-        email = request.query_params.get("email")
-        user = get_object_or_404(User, email=email)
-        wishlist, _ = Wishlist.objects.get_or_create(user=user)
+class WishlistView(generics.RetrieveAPIView):
+    serializer_class = WishlistSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-        serializer = WishlistSerializer(wishlist)
+    def get_object(self):
+        return Wishlist.objects.get(user=self.request.user)
 
-        return Response(serializer.data)
 
-    elif method == "POST":
-        email = request.data.get("email")
-        user = get_object_or_404(User, email=email)
-        wishlist, _ = Wishlist.objects.get_or_create(user=user)
+class AddToWishlistView(generics.CreateAPIView):
+    serializer_class = WishlistSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-        try:
-            product = get_object_or_404(Product, id=product_id)
-        except Product.DoesNotExist:
-            return Response({"error": "Product Not Found"}, status=404)
-
-        wishlist.products.add(product)
-
-        serializer = WishlistSerializer(wishlist)
-
-        return Response(serializer.data)
-
-    elif method == "DELETE":
-        email = request.data.get("email")
-        user = get_object_or_404(User, email=email)
+    def post(self, request, product_id, *args, **kwargs):
         product = get_object_or_404(Product, id=product_id)
-        wishlist = get_object_or_404(Wishlist, user=user)
+
+        wishlist = Wishlist.objects.get(user=request.user)
+        if wishlist.products.filter(id=product.id).exists():
+            return Response({"message": "Product is already in wishlist"})
+        
+        wishlist.products.add(product)
+        serializer = self.get_serializer(wishlist)
+        return Response(serializer.data)
+
+
+class RemoveFromWishlist(generics.DestroyAPIView):
+    serializer_class = WishlistSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, product_id, *args, **kwargs):
+        product = get_object_or_404(Product, id=product_id)
+
+        wishlist = get_object_or_404(Wishlist, user=request.user)
+
+        if not wishlist.products.filter(id=product.id).exists():
+            return Response({"error": "Product isn't in wishlist"})
 
         wishlist.products.remove(product)
-
-        serializer = WishlistSerializer(wishlist)
-        return Response(serializer.data)
+        return Response("Product removed successfully")
 
 
 from rest_framework.decorators import api_view
