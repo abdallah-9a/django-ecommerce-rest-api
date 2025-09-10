@@ -159,46 +159,53 @@ class CartView(generics.GenericAPIView):
             return Response({"error": "Product not found in cart"})
 
 
-@api_view(["GET", "POST", "DELETE"])
-def cart_view(request, product_id=None):
-    method = request.method
-    if method == "POST":  # add product to cart
-        cart_code = request.data.get("cart_code")
-        product_id = request.data.get("product_id")
+class ListCreateReviewView(generics.ListCreateAPIView):
+    serializer_class = ReviewSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-        cart, created = Cart.objects.get_or_create(cart_code=cart_code)
-        product = Product.objects.get(id=product_id)
+    def get_queryset(self):
+        product_id = self.kwargs["product_id"]
+        product = get_object_or_404(Product, id=product_id)
+        return product.reviews.all()
 
-        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        item.quantity = 1
-        item.save()
+    def post(self, request, product_id, *args, **kwargs):
+        product = get_object_or_404(Product, id=product_id)
+        review_content = request.data.get("review")
+        rating = request.data.get("rating")
+        user = request.user
 
-        serializer = CartSerializer(cart)
+        if Review.objects.filter(product=product, user=user).exists():
+            return Response(
+                "You are already dropped a review for this product", status=400
+            )
+        review = Review.objects.create(
+            user=user, product=product, rating=rating, review=review_content
+        )
+        serializer = self.get_serializer(review)
         return Response(serializer.data)
 
-    elif method == "GET":  # get cart detail
-        cart_code = request.query_params.get("cart_code")
-        cart = get_object_or_404(Cart, cart_code=cart_code)
 
-        serializer = CartSerializer(cart)
-        return Response(serializer.data)
-    elif method == "DELETE":
-        cart_code = request.data.get("cart_code")
-        try:
-            cart = get_object_or_404(Cart, cart_code=cart_code)
-        except Cart.DoesNotExist:
-            return Response("Cart Doesn't Exist", status=404)
-        try:
-            product = get_object_or_404(Product, id=product_id)
-        except Product.DoesNotExist:
-            return Response("Product Doesn't Exist", status=404)
-        try:
-            item = get_object_or_404(CartItem, cart=cart, product=product)
-            item.delete()
-        except CartItem.DoesNotExist:
-            return Response("Item Doesn't Exists", status=404)
+class UpdateReviewView(generics.UpdateAPIView):
+    serializer_class = ReviewSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-        return Response("Product Deleted Successfully")
+    def get_object(self):
+        product_id = self.kwargs["product_id"]
+        product = get_object_or_404(Product, id=product_id)
+
+        return get_object_or_404(Review, product=product, user=self.request.user)
+
+
+class DeleteReviewView(generics.DestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Review.objects.filter(user=self.request.user)
 
 
 @api_view(["GET", "POST", "PUT", "DELETE"])
@@ -269,7 +276,7 @@ class AddToWishlistView(generics.CreateAPIView):
         wishlist = Wishlist.objects.get(user=request.user)
         if wishlist.products.filter(id=product.id).exists():
             return Response({"message": "Product is already in wishlist"})
-        
+
         wishlist.products.add(product)
         serializer = self.get_serializer(wishlist)
         return Response(serializer.data)

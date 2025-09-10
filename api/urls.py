@@ -17,11 +17,14 @@ urlpatterns = [
         name="category_detail",
     ),
     path("cart/", views.CartView.as_view(), name="cart"),  # GET, POST, and DELETE
-    path("products/<int:id>/reviews/", views.review_view, name="Add_review"),  # POST
-    path("products/<int:id>/reviews/", views.review_view, name="reviews_list"),  # GET
     path(
-        "products/<int:product_id>/reviews/<int:review_id>/",
-        views.review_view,
+        "products/<int:product_id>/reviews/",
+        views.ListCreateReviewView.as_view(),
+        name="Add_review",
+    ),  # GET, POST
+    path(
+        "products/<int:product_id>/reviews/update/",
+        views.UpdateReviewView.as_view(),
         name="update_review",
     ),  # PUT
     path(
@@ -30,7 +33,9 @@ urlpatterns = [
         name="delete_review",
     ),  # DELETE
     path(
-        "wishlist/add/<int:product_id>/", views.AddToWishlistView.as_view(), name="add_to_wishlist"
+        "wishlist/add/<int:product_id>/",
+        views.AddToWishlistView.as_view(),
+        name="add_to_wishlist",
     ),  # POST
     path(
         "wishlist/remove/<int:product_id>/",
