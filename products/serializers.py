@@ -22,7 +22,15 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ["id", "name"]
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    products = serializers.StringRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ["id", "name", "products"]
