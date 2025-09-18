@@ -28,12 +28,12 @@ class CartItem(models.Model):
         unique_together = ("cart", "product")
 
     def __str__(self):
-        return f"{self.product.name}"
+        return f"{self.quantity} of {self.product.name}"
 
     def clean(self):
         if self.quantity < 1:
             raise ValidationError("Quantity must be at least 1.")
-        
+
         if self.quantity > self.product.stock:
             raise ValidationError(
                 f"Only {self.product.stock} units available in stock."
