@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ValidationError
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from .serializers import CartSerializer, CartItemSerializer, CartItemCreateSerializer
+from .serializers import CartSerializer, CartItemSerializer, CartItemUpdateSerializer
 from .models import Cart, CartItem
 
 # Create your views here.
@@ -18,7 +18,7 @@ class CartView(generics.RetrieveAPIView):
 
 class AddItemView(generics.CreateAPIView):
     queryset = CartItem.objects.all()
-    serializer_class = CartItemCreateSerializer
+    serializer_class = CartItemSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -30,3 +30,16 @@ class AddItemView(generics.CreateAPIView):
             )
 
         serializer.save(cart=cart)
+
+
+class UpdateQuantityView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = CartItem.objects.all()
+    serializer_class = CartItemUpdateSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "pk"
+
+    def perform_update(self, serializer):
+        quantity = serializer.validated_data["quantity"]
+        serializer.save(quantity=quantity)
+        
+    

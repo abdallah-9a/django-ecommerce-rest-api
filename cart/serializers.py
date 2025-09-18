@@ -5,7 +5,7 @@ from products.models import Product
 from products.serializers import ProductListSerializer
 
 
-class CartItemSerializer(serializers.ModelSerializer):
+class CartItemListSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     subtotal = serializers.SerializerMethodField()
 
@@ -17,7 +17,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.subtotal()
 
 
-class CartItemCreateSerializer(serializers.ModelSerializer):
+class CartItemSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(
         queryset=Product.objects.all(), slug_field="slug"
     )
@@ -39,9 +39,27 @@ class CartItemCreateSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class CartItemUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = ["quantity"]
+
+    def validate_quantity(self, value):
+
+        product = self.instance.product
+
+        if value <= 0:
+            raise ValidationError("Quantity must be at least 1")
+
+        if value > product.stock:
+            raise ValidationError(f"Only {product.stock} units available in stock")
+
+        return value
+
+
 class CartSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
-    items = CartItemSerializer(many=True, read_only=True)
+    items = CartItemListSerializer(many=True, read_only=True)
     total = serializers.SerializerMethodField()
 
     class Meta:
