@@ -21,7 +21,7 @@ class Order(models.Model):
         return f"Order #{self.id} for {self.user.username} ({self.status})"
 
     def total_price(self):
-        return sum(item.price * item.quantity for item in self.items)
+        return sum(item.price * item.quantity for item in self.items.all())
 
 
 class OrderItem(models.Model):
