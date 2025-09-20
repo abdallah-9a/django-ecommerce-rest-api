@@ -13,7 +13,8 @@ class CartView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return get_object_or_404(Cart, user=self.request.user)
+        cart, _ = Cart.objects.get_or_create(user=self.request.user)
+        return cart
 
 
 class AddItemView(generics.CreateAPIView):
@@ -22,7 +23,7 @@ class AddItemView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        cart = self.request.user.cart
+        cart, _ = Cart.objects.get_or_create(user=self.request.user)
         product = serializer.validated_data["product"]
         if CartItem.objects.filter(cart=cart, product=product).exists():
             raise ValidationError(
@@ -33,13 +34,13 @@ class AddItemView(generics.CreateAPIView):
 
 
 class UpdateQuantityView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = CartItem.objects.all()
     serializer_class = CartItemUpdateSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
 
+    def get_queryset(self):
+        return CartItem.objects.filter(cart__user=self.request.user)
+
     def perform_update(self, serializer):
         quantity = serializer.validated_data["quantity"]
         serializer.save(quantity=quantity)
-        
-    
