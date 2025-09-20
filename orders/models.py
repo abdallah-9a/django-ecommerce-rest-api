@@ -11,6 +11,7 @@ class Order(models.Model):
         ("paid", "Paid"),
         ("shipped", "Shipped"),
         ("delivered", "Delivered"),
+        ("canceled", "Canceled"),
     ]
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"

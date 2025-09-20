@@ -21,3 +21,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_total_price(self, obj):
         return obj.total_price()
+
+
+class UpdateOrderStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["status"]
