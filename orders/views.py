@@ -39,3 +39,12 @@ class OrderListCreateView(generics.ListCreateAPIView):
             item.product.save()
 
             cart.items.all().delete()
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
