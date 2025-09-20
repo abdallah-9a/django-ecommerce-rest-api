@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, filters
 from .models import Product, Category
 from .serializers import (
     ProductListSerializer,
@@ -17,6 +17,8 @@ class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = CustomePagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name", "category__name"]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -36,6 +38,8 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     serializer_class = CategoryListSerializer
     pagination_class = CustomePagination
     permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name"]
 
 
 class CategoryView(generics.RetrieveUpdateDestroyAPIView):

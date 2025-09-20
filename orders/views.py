@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from rest_framework import generics, status
+from rest_framework import generics, status, filters
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import OrderSerializer, UpdateOrderStatusSerializer
 from .models import Order, OrderItem
@@ -14,6 +14,8 @@ class OrderListCreateView(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomePagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["status"]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)

@@ -20,7 +20,7 @@ from .serializers import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 # Create your views here.
@@ -150,6 +150,8 @@ class UserPasswordResetView(APIView):
 class UserListView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["username", "email"]
 
     def get_queryset(self):
         return User.objects.all().exclude(pk=self.request.user.pk)
