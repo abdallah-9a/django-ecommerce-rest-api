@@ -28,7 +28,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         product = attrs.get("product")
-        quantity = attrs.get("quantity")
+        quantity = attrs.get("quantity",1)
 
         if quantity <= 0:
             raise ValidationError("Quantity must be at least 1")
