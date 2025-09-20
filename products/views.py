@@ -14,7 +14,7 @@ from common.permissions import IsAdminOrReadOnly
 
 
 class ProductListCreateView(generics.ListCreateAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related("category").all()
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = CustomePagination
     filter_backends = [filters.SearchFilter]
@@ -28,7 +28,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
 
 
 class ProductView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related("category").all()
     serializer_class = ProductSerializer
     permission_classes = [IsAdminOrReadOnly]
 
@@ -43,6 +43,6 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 
 
 class CategoryView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]

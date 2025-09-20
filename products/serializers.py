@@ -14,7 +14,9 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = serializers.StringRelatedField()
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(), slug_field="name"
+    )
     image = serializers.ImageField(read_only=True)
 
     class Meta:
