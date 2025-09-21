@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import generics, status, filters
@@ -25,24 +26,25 @@ class OrderListCreateView(generics.ListCreateAPIView):
         if not cart.items.exists():
             raise ValidationError("Your Cart is Empty")
 
-        order = serializer.save(user=self.request.user)
+        with transaction.atomic():
+            order = serializer.save(user=self.request.user)
 
-        for item in cart.items.all():
-            if item.quantity > item.product.stock:
-                raise ValidationError(
-                    f"Not Enough Stock for {item.product}. Only {item.product.stock} left"
+            for item in cart.items.all():
+                if item.quantity > item.product.stock:
+                    raise ValidationError(
+                        f"Not Enough Stock for {item.product}. Only {item.product.stock} left"
+                    )
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    price=item.product.price,
+                    quantity=item.quantity,
                 )
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                price=item.product.price,
-                quantity=item.quantity,
-            )
 
-            item.product.stock -= item.quantity
-            item.product.save()
+                item.product.stock -= item.quantity
+                item.product.save()
 
-        cart.items.all().delete()
+            cart.items.all().delete()
 
 
 class OrderDetailView(generics.RetrieveAPIView):
