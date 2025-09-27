@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from django.urls import reverse
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from .models import User
 from .utils import Util
@@ -120,11 +121,12 @@ class SendPasswordResetEmailView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.id))
         token = PasswordResetTokenGenerator().make_token(user)
 
-        link = f"http://localhost:8000/api/user/reset-password/{uid}/{token}/"
+        link = reverse("reset-password", kwargs={"uid": uid, "token": token})
+        # Build absolute URL for email
+        absolute_link = request.build_absolute_uri(link)
 
         # Send Email
-
-        body = f"Click following this link to reset your password ---> {link}"
+        body = f"Click the following link to reset your password: {absolute_link}"
         data = {"subject": "reset your password", "body": body, "to_email": user.email}
         Util.send_email(data)
 
